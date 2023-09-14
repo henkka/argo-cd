@@ -196,29 +196,30 @@ type ArgoCDServer struct {
 }
 
 type ArgoCDServerOpts struct {
-	DisableAuth           bool
-	EnableGZip            bool
-	Insecure              bool
-	StaticAssetsDir       string
-	ListenPort            int
-	ListenHost            string
-	MetricsPort           int
-	MetricsHost           string
-	Namespace             string
-	DexServerAddr         string
-	DexTLSConfig          *dexutil.DexTLSConfig
-	BaseHRef              string
-	RootPath              string
-	KubeClientset         kubernetes.Interface
-	AppClientset          appclientset.Interface
-	RepoClientset         repoapiclient.Clientset
-	Cache                 *servercache.Cache
-	RedisClient           *redis.Client
-	TLSConfigCustomizer   tlsutil.ConfigCustomizer
-	XFrameOptions         string
-	ContentSecurityPolicy string
-	ApplicationNamespaces []string
-	EnableProxyExtension  bool
+	DisableAuth                   bool
+	EnableGZip                    bool
+	Insecure                      bool
+	StaticAssetsDir               string
+	ListenPort                    int
+	ListenHost                    string
+	MetricsPort                   int
+	MetricsHost                   string
+	Namespace                     string
+	DexServerAddr                 string
+	DexTLSConfig                  *dexutil.DexTLSConfig
+	BaseHRef                      string
+	RootPath                      string
+	KubeClientset                 kubernetes.Interface
+	AppClientset                  appclientset.Interface
+	RepoClientset                 repoapiclient.Clientset
+	Cache                         *servercache.Cache
+	RedisClient                   *redis.Client
+	TLSConfigCustomizer           tlsutil.ConfigCustomizer
+	XFrameOptions                 string
+	ContentSecurityPolicy         string
+	ApplicationNamespaces         []string
+	EnableProxyExtension          bool
+	DisableDefaultProjectCreation bool
 }
 
 // initializeDefaultProject creates the default project if it does not already exist
@@ -247,7 +248,9 @@ func NewServer(ctx context.Context, opts ArgoCDServerOpts) *ArgoCDServer {
 	settingsMgr := settings_util.NewSettingsManager(ctx, opts.KubeClientset, opts.Namespace)
 	settings, err := settingsMgr.InitializeSettings(opts.Insecure)
 	errorsutil.CheckError(err)
-	err = initializeDefaultProject(opts)
+	if !opts.DisableDefaultProjectCreation {
+		err = initializeDefaultProject(opts)
+	}
 	errorsutil.CheckError(err)
 
 	appInformerNs := opts.Namespace
